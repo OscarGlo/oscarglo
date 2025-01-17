@@ -75,7 +75,7 @@ window.addEventListener("load", () => {
     window.requestAnimationFrame(draw);
 
     // Paint cells on mouse/touch move
-    function paint(evt) {
+    function paint(size, evt) {
         if (
             rect.left <= evt.clientX && rect.right >= evt.clientX &&
             rect.top <= evt.clientY && rect.bottom >= evt.clientY
@@ -84,11 +84,15 @@ window.addEventListener("load", () => {
 
         const x = Math.floor(evt.clientX / SIZE);
         const y = Math.floor(evt.clientY / SIZE);
-        cells[x][y] = true;
+        for (let dx = x; dx <= Math.min(cells.length - 1, x + 1); dx++) {
+            for (let dy = y; dy <= Math.min(cells[0].length - 1, y + 1); dy++) {
+                cells[dx][dy] = true;
+            }
+        }
     }
 
-    window.addEventListener("mousemove", paint);
-    window.addEventListener("touchmove", (evt) => paint(evt.touches[0]));
+    window.addEventListener("mousemove", (evt) => paint(2, evt));
+    window.addEventListener("touchmove", (evt) => paint(2, evt.touches[0]));
 
     // Update automata
     function tileInRect(x, y) {
