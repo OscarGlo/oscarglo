@@ -15,7 +15,7 @@ app.use((req, res, next) => {
     }
 
     if (redirect || req.subdomains[0] === "manysweeper")
-        return proxy(`https://localhost:8443/${path}`)(req, res, next);
+        return proxy(`https://oscarglo.dev:8443/${path}`)(req, res, next);
 
     next();
 });
