@@ -5,7 +5,7 @@ const express = require("express");
 
 const app = express();
 const server = https.createServer(app);
-const proxy = createProxyServer({ target: 'https://localhost:8443' });
+const proxy = createProxyServer({ target: 'https://localhost:8443', ws: true });
 
 server.on('upgrade', (req, socket, head) => {
     console.log("upgrade", req, socket, head);
