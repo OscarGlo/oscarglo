@@ -7,7 +7,10 @@ const app = express();
 const server = https.createServer(app);
 const proxy = createProxyServer({ target: 'https://localhost:8443' });
 
-server.on('upgrade', proxy.ws);
+server.on('upgrade', (req, socket, head) => {
+    console.log("upgrade", req, socket, head);
+    proxy.ws(req, socket, head);
+});
 
 app.use((req, res, next) => {
     let redirect = false;
