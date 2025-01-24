@@ -19,7 +19,7 @@ app.use((req, res, next) => {
     }
 
     if (redirect || req.subdomains[0] === "manysweeper")
-        proxy.web(req, res);
+        return proxy.web(req, res);
 
     next();
 });
