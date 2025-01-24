@@ -1,9 +1,13 @@
 const https = require("https");
-const proxy = require('express-http-proxy');
+const { createProxyServer } = require('http-proxy');
 const fs = require("fs");
 const express = require("express");
 
 const app = express();
+const server = https.createServer(app);
+const proxy = createProxyServer({ target: 'https://localhost:8443' });
+
+server.on('upgrade', proxy.ws);
 
 app.use((req, res, next) => {
     let redirect = false;
@@ -15,7 +19,7 @@ app.use((req, res, next) => {
     }
 
     if (redirect || req.subdomains[0] === "manysweeper")
-        return proxy(`https://oscarglo.dev:8443/${path}`)(req, res, next);
+        proxy.web(req, res);
 
     next();
 });
