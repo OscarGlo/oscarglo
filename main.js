@@ -4,25 +4,14 @@ const fs = require("fs");
 const express = require("express");
 
 const app = express();
-const server = https.createServer(app);
 const proxy = createProxyServer({ target: 'https://localhost:8443', ws: true });
 
-server.on('upgrade', (req, socket, head) => {
-    console.log("upgrade", req, socket, head);
-    proxy.ws(req, socket, head);
-});
-
 app.use((req, res, next) => {
-    let redirect = false;
-
-    const path = req.path.split("/").slice(1);
-    if (path[0] === "manysweeper") {
-        path.splice(0, 1);
-        redirect = true;
-    }
-
-    if (redirect || req.subdomains[0] === "manysweeper")
+    if (req.subdomains[0] === "manysweeper") {
+        if (req.headers.upgrade === "websocket")
+            return proxy.ws(req, req.socket);
         return proxy.web(req, res);
+    }
 
     next();
 });
