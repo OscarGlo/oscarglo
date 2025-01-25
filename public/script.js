@@ -4,7 +4,7 @@ function array2D(x, y, value) {
     return new Array(x).fill(0).map(() => new Array(y).fill(value));
 }
 
-const modes = ["sand", "life"];
+const modes = ["sand", "life", "maze"];
 
 window.addEventListener("load", () => {
     const canvas = document.querySelector("canvas");
@@ -50,10 +50,10 @@ window.addEventListener("load", () => {
 
     // Random update mode
     let mode = "sand";
+
     function randomMode() {
         const choice = modes.filter(m => m !== mode);
         mode = choice[Math.floor(Math.random() * choice.length)];
-        console.log(mode);
     }
 
     document.querySelector(".random").addEventListener("click", randomMode);
@@ -133,28 +133,34 @@ window.addEventListener("load", () => {
         return tmp;
     }
 
-    function life(tmp) {
-        for (let x = 0; x < cells.length; x++) {
-            for (let y = 0; y < cells[0].length; y++) {
-                if (tileInRect(x, y))
-                    continue;
+    function neighborAutomata(birth, survive) {
+        return (tmp) => {
+            for (let x = 0; x < cells.length; x++) {
+                for (let y = 0; y < cells[0].length; y++) {
+                    if (tileInRect(x, y))
+                        continue;
 
-                let neighbors = 0;
-                for (let dx = Math.max(0, x - 1); dx <= Math.min(cells.length - 1, x + 1); dx++) {
-                    for (let dy = Math.max(0, y - 1); dy <= Math.min(cells[0].length - 1, y + 1); dy++) {
-                        if (cells[dx][dy] && (dx !== x || dy !== y))
-                            neighbors++;
+                    let neighbors = 0;
+                    for (let dx = Math.max(0, x - 1); dx <= Math.min(cells.length - 1, x + 1); dx++) {
+                        for (let dy = Math.max(0, y - 1); dy <= Math.min(cells[0].length - 1, y + 1); dy++) {
+                            if (cells[dx][dy] && (dx !== x || dy !== y))
+                                neighbors++;
+                        }
                     }
+                    if ((cells[x][y] && survive.includes(neighbors)) || (!cells[x][y] && birth.includes(neighbors)))
+                        tmp[x][y] = true;
                 }
-                if ((cells[x][y] && neighbors === 2) || neighbors === 3)
-                    tmp[x][y] = true;
             }
-        }
-        return tmp;
+            return tmp;
+        };
     }
 
     setInterval(() => {
-        const fun = {sand, life}[mode];
+        const fun = {
+            sand,
+            life: neighborAutomata([3], [2, 3]),
+            maze: neighborAutomata([3], [2, 3, 4])
+        }[mode];
         cells = fun(array2D(cells.length, cells[0].length, false));
     }, 1000 / 60);
 });
