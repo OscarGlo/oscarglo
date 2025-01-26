@@ -10,7 +10,7 @@ const httpsServer = https.createServer({
 }, app);
 const proxy = createProxyServer({ target: 'https://localhost:8443', ws: true });
 
-httpsServer.on("upgrade", proxy.ws);
+httpsServer.on("upgrade", (req, socket, head) => proxy.ws(req, socket, head));
 
 app.use((req, res, next) => {
     if (req.subdomains[0] === "manysweeper")
