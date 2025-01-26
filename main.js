@@ -25,12 +25,6 @@ app.use((req, res, next) => {
     next();
 });
 
-server.on("upgrade", (req, socket, head) => {
-    if (req.subdomains[0] === "manysweeper") {
-        proxy.ws(req, socket, head);
-    }
-});
-
 app.use(express.static("public"));
 
 app.get("/", (req, res) => res.sendFile("public/index.html"));
