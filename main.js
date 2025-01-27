@@ -8,7 +8,7 @@ const httpsServer = https.createServer({
     key: fs.readFileSync('ssl/private.key.pem', 'utf8'),
     cert: fs.readFileSync('ssl/domain.cert.pem', 'utf8')
 }, app);
-const proxy = createProxyServer({ target: 'https://localhost:8443', ws: true });
+const proxy = createProxyServer({ target: 'https://oscarglo.dev:8443', ws: true });
 
 httpsServer.on("upgrade", (req, socket, head) => proxy.ws(req, socket, head));
 
