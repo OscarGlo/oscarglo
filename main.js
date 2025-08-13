@@ -8,13 +8,17 @@ const httpsServer = https.createServer({
     key: fs.readFileSync('ssl/private.key.pem', 'utf8'),
     cert: fs.readFileSync('ssl/domain.cert.pem', 'utf8')
 }, app);
-const proxy = createProxyServer({ target: 'https://oscarglo.dev:8443', ws: true });
+
+const manysweeperProxy = createProxyServer({ target: 'https://oscarglo.dev:9000', ws: true });
+const canvasProxy = createProxyServer({ target: 'https://oscarglo.dev:9001' });
 
 httpsServer.on("upgrade", (req, socket, head) => proxy.ws(req, socket, head));
 
 app.use((req, res, next) => {
     if (req.subdomains[0] === "manysweeper")
-        return proxy.web(req, res);
+        return manysweeperProxy.web(req, res);
+    if (req.subdomains[0] === "canvas")
+        return canvasProxy.web(req, res);
 
     next();
 });
