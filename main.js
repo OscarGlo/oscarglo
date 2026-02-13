@@ -1,16 +1,35 @@
 const https = require("https");
-const { createProxyServer } = require('http-proxy');
-const fs = require("fs");
+const {createProxyServer} = require('http-proxy');
 const express = require("express");
 
-const app = express();
-const httpsServer = https.createServer({
-    key: fs.readFileSync('ssl/private.key.pem', 'utf8'),
-    cert: fs.readFileSync('ssl/domain.cert.pem', 'utf8')
-}, app);
+const secrets = require("./secrets.json");
 
-const manysweeperProxy = createProxyServer({ target: 'http://oscarglo.dev:9000', ws: true });
-const canvasProxy = createProxyServer({ target: 'http://oscarglo.dev:9001' });
+const app = express();
+const httpsServer = https.createServer(app);
+
+async function setKeys() {
+    const keys = await fetch(
+        "https://api.porkbun.com/api/json/v3/ssl/retrieve/oscarglo.dev",
+        {
+            method: "POST",
+            body: JSON.stringify(secrets),
+        }
+    ).then(res => res.json());
+
+    httpsServer.setSecureContext({
+        key: keys.privatekey,
+        cert: keys.certificatechain
+    });
+
+    console.log(`[${new Date().toUTCString()}] Updated SSL certificates (status = ${keys.status})`)
+}
+
+// Update certificate every hour
+setKeys();
+setInterval(setKeys, 7 * 24 * 60 * 60 * 1000);
+
+const manysweeperProxy = createProxyServer({target: 'http://oscarglo.dev:9000', ws: true});
+const canvasProxy = createProxyServer({target: 'http://oscarglo.dev:9001'});
 
 httpsServer.on("upgrade", (req, socket, head) => manysweeperProxy.ws(req, socket, head));
 
@@ -27,4 +46,6 @@ app.use(express.static("public"));
 
 app.get("/", (req, res) => res.sendFile("public/index.html"));
 
-httpsServer.listen({ port: 443 }, () => console.log("Listening on https://localhost:443/"));
+httpsServer.listen({port: 443}, () => {
+    console.log(`[${new Date().toUTCString()}] Listening on https://localhost:443/`);
+});
