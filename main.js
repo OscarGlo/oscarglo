@@ -9,7 +9,7 @@ const httpsServer = https.createServer(app);
 
 function logDate() {
     const d = new Date().toISOString().replace("T", " ");
-    return d.substring(d.lastIndexOf("."));
+    return d.substring(0, d.lastIndexOf("."));
 }
 
 async function setKeys() {
