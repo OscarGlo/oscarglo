@@ -36,22 +36,19 @@ setInterval(setKeys, 7 * 24 * 60 * 60 * 1000);
 const manysweeperProxy = createProxyServer({target: 'http://oscarglo.dev:9000', ws: true});
 const canvasProxy = createProxyServer({target: 'http://oscarglo.dev:9001'});
 
+for (const proxy of [manysweeperProxy, canvasProxy])
+    proxy.on("error", function (err, req, res) {
+        console.error(`[${logDate()}]`, req.url, err);
+        res.sendStatus(500);
+    });
+
 httpsServer.on("upgrade", (req, socket, head) => manysweeperProxy.ws(req, socket, head));
 
 app.use((req, res, next) => {
-    let proxy = null;
     if (req.subdomains[0] === "manysweeper")
-        proxy = manysweeperProxy.web(req, res);
+        return manysweeperProxy.web(req, res);
     if (req.subdomains[0] === "canvas")
-        proxy = canvasProxy.web(req, res);
-
-    if (proxy != null) {
-        proxy.on("error", function (err, req, res) {
-            console.error(`[${logDate()}]`, req.url, e);
-            res.sendStatus(500);
-        });
-        return proxy;
-    }
+        return canvasProxy.web(req, res);
 
     next();
 });
