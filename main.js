@@ -39,14 +39,18 @@ const canvasProxy = createProxyServer({target: 'http://oscarglo.dev:9001'});
 httpsServer.on("upgrade", (req, socket, head) => manysweeperProxy.ws(req, socket, head));
 
 app.use((req, res, next) => {
-    try {
-        if (req.subdomains[0] === "manysweeper")
-            return manysweeperProxy.web(req, res);
-        if (req.subdomains[0] === "canvas")
-            return canvasProxy.web(req, res);
-    } catch (e) {
-        console.error(`[${logDate()}]`, req.url, e);
-        return res.sendStatus(500);
+    let proxy = null;
+    if (req.subdomains[0] === "manysweeper")
+        proxy = manysweeperProxy.web(req, res);
+    if (req.subdomains[0] === "canvas")
+        proxy = canvasProxy.web(req, res);
+
+    if (proxy != null) {
+        proxy.on("error", function (err, req, res) {
+            console.error(`[${logDate()}]`, req.url, e);
+            res.sendStatus(500);
+        });
+        return proxy;
     }
 
     next();
