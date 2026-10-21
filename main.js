@@ -1,4 +1,5 @@
 const https = require("https");
+const path = require("path");
 const {createProxyServer} = require('http-proxy');
 const express = require("express");
 
@@ -49,6 +50,11 @@ app.use((req, res, next) => {
         return manysweeperProxy.web(req, res);
     if (req.subdomains[0] === "canvas")
         return canvasProxy.web(req, res);
+
+    if (req.subdomains[0] === "dailyofrhino") {
+        const file = req.path === "/" ? "index.html" : req.path.substring(1);
+        return res.sendFile(path.join(__dirname, "..", "rhino", decodeURI(file)));
+    }
 
     next();
 });
