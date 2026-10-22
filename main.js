@@ -40,7 +40,9 @@ const canvasProxy = createProxyServer({target: 'http://oscarglo.dev:9001'});
 for (const proxy of [manysweeperProxy, canvasProxy])
     proxy.on("error", function (err, req, res) {
         console.error(`[${logDate()}]`, req.url, err);
-        res.sendStatus(500);
+
+        res.writeHead(500);
+        res.end();
     });
 
 httpsServer.on("upgrade", (req, socket, head) => manysweeperProxy.ws(req, socket, head));
