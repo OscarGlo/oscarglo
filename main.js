@@ -41,8 +41,8 @@ for (const proxy of [manysweeperProxy, canvasProxy])
     proxy.on("error", function (err, req, res) {
         console.error(`[${logDate()}]`, req.url, err);
 
-        res.writeHead(500);
-        res.end();
+        if ("sendStatus" in res)
+            res.sendStatus(500);
     });
 
 httpsServer.on("upgrade", (req, socket, head) => manysweeperProxy.ws(req, socket, head));
